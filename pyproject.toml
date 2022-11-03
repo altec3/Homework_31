@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "hw-27"
+version = "0.1.0"
+description = "Homework of the lesson 27"
+authors = ["Aleksey Lesnikov <poprobuyu@mail.ru>"]
+readme = "README.md"
+packages = [{include = "hw_27"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^4.1.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
