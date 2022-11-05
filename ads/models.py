@@ -8,7 +8,7 @@ class Ad(models.Model):
     price = models.PositiveIntegerField()
     description = models.CharField(max_length=1000, help_text="Краткое описание. Максимум 1000 символов")
     address = models.CharField(max_length=500)
-    is_published = models.BooleanField()
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
