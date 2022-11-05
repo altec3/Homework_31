@@ -1,11 +1,12 @@
 import csv
 import json
-from typing import Union, List, Dict, Any
+from typing import List, Dict, Any
 
 
-def convert_csv_to_json(csv_file: str, json_file: str) -> None:
+def convert_csv_to_json(csv_file: str) -> str:
+    """ Converts structure of file from CSV to JSON """
+
     json_list = []
-
     with open(csv_file, encoding='utf-8') as csvf:
         csv_read = csv.DictReader(csvf)
 
@@ -17,22 +18,17 @@ def convert_csv_to_json(csv_file: str, json_file: str) -> None:
                     row[k] = False
             json_list.append(row)
 
-    with open(json_file, 'w', encoding='utf-8') as jsonf:
-        json_str = json.dumps(json_list, indent=4, ensure_ascii=False)
-        jsonf.write(json_str)
+    return json.dumps(json_list, indent=4, ensure_ascii=False)
 
 
-def read_json(filename: str, encoding: str = "utf-8") -> Union[list, dict]:
-    with open(filename, encoding=encoding) as f:
-        return json.load(f)
+def create_fixtures(input_file: str, output_file: str, model: str) -> None:
+    """ Creates Django fixtures from a json file """
 
-
-def convert_json_to_fixtures(input_file: str, output_file: str, model: str) -> None:
     data = []
-    json_list: List[Dict[str, Any]] = read_json(input_file)
+    json_list: List[Dict[str, Any]] = json.loads(input_file)
     for item in json_list:
-        temp = {"pk": item.pop("id"), "model": model, "fields": item}
-        data.append(temp)
+        json_dict: Dict[str, Any] = {"pk": item.pop("id"), "model": model, "fields": item}
+        data.append(json_dict)
 
     with open(output_file, 'w', encoding='utf-8') as f:
         fixtures = json.dumps(data, indent=4, ensure_ascii=False)
