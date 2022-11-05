@@ -2,7 +2,7 @@
 name = "hw-27"
 version = "0.1.0"
 description = "Homework of the lesson 27"
-authors = ["Aleksey Lesnikov <poprobuyu@mail.ru>"]
+authors = ["Aleksey Lesnikov"]
 readme = "README.md"
 packages = [{include = "hw_27"}]
 
