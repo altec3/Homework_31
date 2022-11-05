@@ -10,10 +10,8 @@ from django.views.generic import DetailView
 from ads.models import Ad, Category
 
 
-class Index(View):
-    def get(self, request):
-
-        return JsonResponse({"status": "ok"}, status=200)
+def index(request):
+    return JsonResponse({"status": "ok"}, status=200)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
