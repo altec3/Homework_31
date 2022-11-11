@@ -10,8 +10,8 @@ if __name__ == '__main__':
     )
     create_fixtures(
         input_file=convert_csv_to_json('datasets/category.csv'),
-        output_file='ads/fixtures/category.json',
-        model='ads.category'
+        output_file='categories/fixtures/category.json',
+        model='categories.category'
     )
     create_fixtures(
         input_file=convert_csv_to_json('datasets/location.csv'),
