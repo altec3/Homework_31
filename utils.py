@@ -16,6 +16,8 @@ def convert_csv_to_json(csv_file: str) -> str:
                     row[k] = True
                 elif v == 'FALSE':
                     row[k] = False
+                elif k == 'location_id':
+                    row[k] = [int(v)]
             json_list.append(row)
 
     return json.dumps(json_list, indent=4, ensure_ascii=False)
