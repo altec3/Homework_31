@@ -35,7 +35,7 @@ class UsersListView(ListView):
                 "username": user.username,
                 "role": user.role,
                 "age": user.age,
-                "locations": [user.location.name]
+                "locations": list(map(str, user.location_id.all()))
             })
 
         response = {
@@ -50,7 +50,7 @@ class UsersListView(ListView):
 @method_decorator(csrf_exempt, name="dispatch")
 class UserCreateView(CreateView):
     model = User
-    fields = ['first_name', 'last_name', 'username', 'password', 'role', 'age', 'location']
+    fields = ['first_name', 'last_name', 'username', 'password', 'role', 'age', 'location_id']
 
     """Create a new user"""
     def post(self, request, *args, **kwargs):
@@ -70,7 +70,7 @@ class UserCreateView(CreateView):
                 location_obj, _ = Location.objects.get_or_create(
                     name=location
                 )
-                user.location = location_obj
+                user.location_id.add(location_obj)
 
         user.save()
 
@@ -81,7 +81,7 @@ class UserCreateView(CreateView):
             "last_name": user.last_name,
             "role": user.role,
             "age": user.age,
-            "locations": [user.location.name]
+            "locations": list(map(str, user.location_id.all()))
         }, status=201)
 
 
@@ -99,14 +99,14 @@ class UserDetailView(DetailView):
                 "username": user.username,
                 "role": user.role,
                 "age": user.age,
-                "locations": [user.location.name]
+                "locations": list(map(str, user.location_id.all()))
             }, status=200)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class UserUpdateView(UpdateView):
     model = User
-    fields = ['first_name', 'last_name', 'username', 'password', 'role', 'age', 'location']
+    fields = ['first_name', 'last_name', 'username', 'password', 'role', 'age', 'location_id']
 
     """Update user given its identifier"""
     def patch(self, request, *args, **kwargs):
@@ -126,7 +126,7 @@ class UserUpdateView(UpdateView):
         if "locations" in data:
             for location in data["locations"]:
                 location_obj, _ = Location.objects.get_or_create(name=location)
-                self.object.location = location_obj
+                self.object.location_id.add(location_obj)
 
         self.object.save()
 
@@ -136,7 +136,7 @@ class UserUpdateView(UpdateView):
             "last_name": self.object.last_name,
             "username": self.object.username,
             "age": self.object.age,
-            "location": self.object.location_id
+            "location": list(map(str, self.object.location_id.all()))
         }, status=204)
 
 
