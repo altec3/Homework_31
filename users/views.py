@@ -2,8 +2,10 @@ import json
 from typing import Dict, Any
 
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 
@@ -150,3 +152,19 @@ class UserDeleteView(DeleteView):
         super().delete(request, *args, **kwargs)
 
         return JsonResponse({"status": "ok"}, status=204)
+
+
+class UserTotalAdsView(View):
+
+    def get(self, request, *args, **kwargs):
+        user_qs = User.objects.annotate(total_ads=Count("ad"))
+        return JsonResponse({
+                "id": user_qs.id,
+                "first_name": user_qs.first_name,
+                "last_name": user_qs.last_name,
+                "username": user_qs.username,
+                "role": user_qs.role,
+                "age": user_qs.age,
+                "locations": list(map(str, user_qs.location_id.all())),
+                "total_ads": user_qs.total_ads
+            }, status=200)
