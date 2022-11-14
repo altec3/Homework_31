@@ -5,7 +5,6 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 
@@ -17,12 +16,13 @@ from users.models import User
 @method_decorator(csrf_exempt, name="dispatch")
 class UsersListView(ListView):
     model = User
+    queryset = User.objects.all()
 
     """Get all users"""
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        self.object_list = self.object_list.all()
+        self.object_list = self.object_list.annotate(total_ads=Count("ad"))
 
         paginator = Paginator(self.object_list, settings.ITEMS_ON_PAGE)
         page_number = request.GET.get("page", 1)
@@ -37,6 +37,7 @@ class UsersListView(ListView):
                 "username": user.username,
                 "role": user.role,
                 "age": user.age,
+                "total_ads": user.total_ads,
                 "locations": list(map(str, user.location_id.all()))
             })
 
@@ -152,35 +153,3 @@ class UserDeleteView(DeleteView):
         super().delete(request, *args, **kwargs)
 
         return JsonResponse({"status": "ok"}, status=204)
-
-
-class UserTotalAdsView(View):
-
-    def get(self, request, *args, **kwargs):
-        user_qs = User.objects.annotate(total_ads=Count("ad"))
-
-        paginator = Paginator(user_qs, settings.ITEMS_ON_PAGE)
-        page_number = request.GET.get("page", 1)
-        page_obj = paginator.get_page(page_number)
-
-        users = []
-        for user in page_obj:
-            users.append({
-                "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "username": user.username,
-                "role": user.role,
-                "age": user.age,
-                "locations": list(map(str, user.location_id.all())),
-                "total_ads": user.total_ads
-            })
-
-        response = {
-            "items": users,
-            "total": paginator.count,
-            "page": page_number,
-            "num_pages": paginator.num_pages
-        }
-
-        return JsonResponse(response, status=200)
