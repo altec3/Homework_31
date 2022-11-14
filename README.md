@@ -7,6 +7,13 @@
 docker run --name hw_28_psql -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 ```
 
+### Миграция таблиц в базу данных
+
+```python
+python manage.py migrate
+```
+
+
 ### Загрузка фикстур в базу данных
 
 ```python
