@@ -2,7 +2,7 @@ import json
 from typing import Dict, Any
 
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -22,7 +22,7 @@ class UsersListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        self.object_list = self.object_list.annotate(total_ads=Count("ad"))
+        self.object_list = self.object_list.annotate(total_ads=Count("ad", filter=Q(ad__is_published__gte=True)))
 
         paginator = Paginator(self.object_list, settings.ITEMS_ON_PAGE)
         page_number = request.GET.get("page", 1)
