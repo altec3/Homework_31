@@ -1,13 +1,17 @@
 import json
 from typing import Dict, Any
 
+from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
-from ads.models import Ad, Category
+from HW_27 import settings
+from ads.models import Ad
+from categories.models import Category
+from users.models import User
 
 
 def index(request):
@@ -15,42 +19,75 @@ def index(request):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class AdsView(View):
+class AdsListView(ListView):
+    model = Ad
 
     """Get all ads"""
-    def get(self, request):
-        ads: type(Ad) = Ad.objects.all()
-        response = []
-        for ad in ads:
-            response.append({
-                'id': ad.id,
-                'name': ad.name,
-                'author': ad.author,
-                'price': ad.price,
-                'description': ad.description,
-                'address': ad.address,
-                'is_published': ad.is_published
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+
+        self.object_list = self.object_list.order_by("-price")
+
+        paginator = Paginator(self.object_list, settings.ITEMS_ON_PAGE)
+        page_number = request.GET.get("page", 1)
+        page_obj = paginator.get_page(page_number)
+
+        ads = []
+        for ad in page_obj:
+            ads.append({
+                "id": ad.id,
+                "name": ad.name,
+                "price": ad.price,
+                "description": ad.description,
+                "is_published": ad.is_published,
+                "image": ad.image.url if ad.image else None,
+                "author": ad.author_id,
+                "category": ad.category_id
             })
+
+        response = {
+            "items": ads,
+            "total": paginator.count,
+            "page": page_number,
+            "num_pages": paginator.num_pages
+        }
+
         return JsonResponse(response, safe=False, status=200)
 
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AdCreateView(CreateView):
+    model = Ad
+    fields = ['name', 'price', 'description', 'is_published', 'image', 'author', 'category']
+
     """Create a new ad"""
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         data: Dict[str, Any] = json.loads(request.body)
-        ad = Ad(**data)
+
+        ad = Ad.objects.create(
+            name=data["name"],
+            price=data["price"],
+            description=data["description"],
+            is_published=data["is_published"],
+            image=data.get("image")
+        )
+        ad.author = get_object_or_404(User, pk=data["author_id"])
+        ad.category = get_object_or_404(Category, pk=data["category_id"])
         ad.save()
 
         return JsonResponse({
-            'id': ad.id,
-            'name': ad.name,
-            'author': ad.author,
-            'price': ad.price,
-            'description': ad.description,
-            'address': ad.address,
-            'is_published': ad.is_published
+            "id": ad.id,
+            "name": ad.name,
+            "price": ad.price,
+            "description": ad.description,
+            "is_published": ad.is_published,
+            "image": ad.image.url if ad.image else None,
+            "author": ad.author_id,
+            "category": ad.category_id
         }, status=201)
 
 
-class AdView(DetailView):
+class AdDetailView(DetailView):
     model = Ad
 
     """Get ad by pk"""
@@ -60,48 +97,74 @@ class AdView(DetailView):
         return JsonResponse({
                 'id': ad.id,
                 'name': ad.name,
-                'author': ad.author,
                 'price': ad.price,
                 'description': ad.description,
-                'address': ad.address,
                 'is_published': ad.is_published
-            })
+            }, status=200)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class CategoriesView(View):
+class AdUpdateView(UpdateView):
+    model = Ad
+    fields = ['name', 'price', 'description', 'is_published', 'image', 'author', 'category']
 
-    """Get all categories"""
-    def get(self, request):
-        categories: type(Category) = Category.objects.all()
-        response = []
-        for category in categories:
-            response.append({
-                'id': category.id,
-                'name': category.name
-            })
-        return JsonResponse(response, safe=False, status=200)
+    """Update ad given its identifier"""
+    def patch(self, request, *args, **kwargs):
+        super().post(request, *args, **kwargs)
+        data = json.loads(request.body)
 
-    """Create a new category"""
-    def post(self, request):
-        data: Dict[str, Any] = json.loads(request.body)
-        category = Category(**data)
-        category.save()
-
-        return JsonResponse({
-            'id': category.id,
-            'name': category.name
-        }, status=201)
-
-
-class CategoryView(DetailView):
-    model = Category
-
-    """Get category by pk"""
-    def get(self, request, *args, **kwargs):
-        category = self.get_object()
+        if data.get("name"):
+            self.object.name = data["name"]
+        if data.get("price"):
+            self.object.price = data["price"]
+        if data.get("description"):
+            self.object.description = data["description"]
+        self.object.author = get_object_or_404(User, pk=data["author_id"])
+        self.object.category = get_object_or_404(Category, pk=data["category_id"])
+        self.object.save()
 
         return JsonResponse({
-            'id': category.id,
-            'name': category.name
-        })
+            "id": self.object.id,
+            "name": self.object.name,
+            "price": self.object.price,
+            "description": self.object.description,
+            "is_published": self.object.is_published,
+            "image": self.object.image.url if self.object.image else None,
+            "author": self.object.author_id,
+            "category": self.object.category_id
+        }, status=204)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AdDeleteView(DeleteView):
+    model = Ad
+    success_url = "/"
+
+    """Delete ad given its identifier"""
+    def delete(self, request, *args, **kwargs):
+        super().delete(request, *args, **kwargs)
+
+        return JsonResponse({"status": "ok"}, status=204)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AdUploadImageView(UpdateView):
+    model = Ad
+    fields = ['name', 'price', 'description', 'is_published', 'image', 'author', 'category']
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        self.object.image = request.FILES["image"]
+        self.object.save()
+
+        return JsonResponse({
+            "id": self.object.id,
+            "name": self.object.name,
+            "price": self.object.price,
+            "description": self.object.description,
+            "is_published": self.object.is_published,
+            "image": self.object.image.url if self.object.image else None,
+            "author": self.object.author_id,
+            "category": self.object.category_id
+        }, status=204)
