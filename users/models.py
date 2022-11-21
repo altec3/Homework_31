@@ -27,4 +27,4 @@ class User(models.Model):
 
     @property
     def total_ads(self):
-        return self.ad.filter(is_published=True).count()
+        return self.ad_set.filter(is_published=True).count()

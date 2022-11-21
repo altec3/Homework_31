@@ -5,10 +5,12 @@ from django.urls import path, include
 from rest_framework import routers
 
 from ads import views
+from ads.views import AdsViewSet
 from locations.views import LocationsViewSet
 
 router = routers.SimpleRouter()
 router.register('location', LocationsViewSet)
+router.register('ad', AdsViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
