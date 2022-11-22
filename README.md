@@ -4,7 +4,7 @@
 ### Создание и запуск образа с PostgreSQL
 
 ```python
-docker run --name hw_28_psql -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+docker run --name hw_29_psql -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 ```
 
 ### Миграция таблиц в базу данных
