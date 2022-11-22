@@ -1,155 +1,35 @@
-import json
-from typing import Dict, Any
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView
 
-from django.core.paginator import Paginator
-from django.db.models import Count, Q
-from django.http import JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
-
-from HW_27 import settings
-from locations.models import Location
 from users.models import User
+from users.serializers import UserListSerializer, UserCreateSerializer, UserRetrieveSerializer, UserUpdateSerializer, \
+    UserDestroySerializer
 
 
-@method_decorator(csrf_exempt, name="dispatch")
-class UsersListView(ListView):
-    model = User
-    queryset = User.objects.all()
-
+class UsersListView(ListAPIView):
     """Get all users"""
-    def get(self, request, *args, **kwargs):
-        super().get(request, *args, **kwargs)
-
-        self.object_list = self.object_list.annotate(total_ads=Count("ad", filter=Q(ad__is_published__gte=True)))
-
-        paginator = Paginator(self.object_list, settings.ITEMS_ON_PAGE)
-        page_number = request.GET.get("page", 1)
-        page_obj = paginator.get_page(page_number)
-
-        users = []
-        for user in page_obj:
-            users.append({
-                "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "username": user.username,
-                "role": user.role,
-                "age": user.age,
-                "total_ads": user.total_ads,
-                "locations": list(map(str, user.location_id.all()))
-            })
-
-        response = {
-            "items": users,
-            "total": paginator.count,
-            "page": page_number,
-            "num_pages": paginator.num_pages
-        }
-        return JsonResponse(response, safe=False, status=200)
+    queryset = User.objects.all()
+    serializer_class = UserListSerializer
 
 
-@method_decorator(csrf_exempt, name="dispatch")
-class UserCreateView(CreateView):
-    model = User
-    fields = ['first_name', 'last_name', 'username', 'password', 'role', 'age', 'location_id']
-
+class UserCreateView(CreateAPIView):
     """Create a new user"""
-    def post(self, request, *args, **kwargs):
-        data: Dict[str, Any] = json.loads(request.body)
-
-        user = User.objects.create(
-            first_name=data.get("first_name"),
-            last_name=data.get("last_name"),
-            username=data["username"],
-            password=data["password"],
-            role=data.get("role", "member"),
-            age=data.get("age")
-        )
-
-        if "locations" in data:
-            for location in data["locations"]:
-                location_obj, _ = Location.objects.get_or_create(
-                    name=location
-                )
-                user.location_id.add(location_obj)
-
-        user.save()
-
-        return JsonResponse({
-            "id": user.id,
-            "username": user.username,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "role": user.role,
-            "age": user.age,
-            "locations": list(map(str, user.location_id.all()))
-        }, status=201)
+    queryset = User.objects.all()
+    serializer_class = UserCreateSerializer
 
 
-class UserDetailView(DetailView):
-    model = User
-
+class UserDetailView(RetrieveAPIView):
     """Get user by pk"""
-    def get(self, request, *args, **kwargs):
-        user = self.get_object()
-
-        return JsonResponse({
-                "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "username": user.username,
-                "role": user.role,
-                "age": user.age,
-                "locations": list(map(str, user.location_id.all()))
-            }, status=200)
+    queryset = User.objects.all()
+    serializer_class = UserRetrieveSerializer
 
 
-@method_decorator(csrf_exempt, name="dispatch")
-class UserUpdateView(UpdateView):
-    model = User
-    fields = ['first_name', 'last_name', 'username', 'password', 'role', 'age', 'location_id']
-
+class UserUpdateView(UpdateAPIView):
     """Update user given its identifier"""
-    def patch(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-        data = json.loads(request.body)
-
-        if data.get("first_name"):
-            self.object.first_name = data["first_name"]
-        if data.get("last_name"):
-            self.object.last_name = data["last_name"]
-        if data.get("username"):
-            self.object.username = data["username"]
-        if data.get("password"):
-            self.object.password = data["password"]
-        if data.get("age"):
-            self.object.age = data["age"]
-        if "locations" in data:
-            for location in data["locations"]:
-                location_obj, _ = Location.objects.get_or_create(name=location)
-                self.object.location_id.add(location_obj)
-
-        self.object.save()
-
-        return JsonResponse({
-            "id": self.object.id,
-            "first_name": self.object.first_name,
-            "last_name": self.object.last_name,
-            "username": self.object.username,
-            "age": self.object.age,
-            "location": list(map(str, self.object.location_id.all()))
-        }, status=204)
+    queryset = User.objects.all()
+    serializer_class = UserUpdateSerializer
 
 
-@method_decorator(csrf_exempt, name="dispatch")
-class UserDeleteView(DeleteView):
-    model = User
-    success_url = "/"
-
+class UserDeleteView(DestroyAPIView):
     """Delete user given its identifier"""
-    def delete(self, request, *args, **kwargs):
-        super().delete(request, *args, **kwargs)
-
-        return JsonResponse({"status": "ok"}, status=204)
+    queryset = User.objects.all()
+    serializer_class = UserDestroySerializer
