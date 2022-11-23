@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "hw-27"
+name = "hw-30"
 version = "0.1.0"
-description = "Homework of the lesson 27"
+description = "Homework of the lesson 30"
 authors = ["Aleksey Lesnikov"]
 readme = "README.md"
 packages = [{include = "hw_27"}]
