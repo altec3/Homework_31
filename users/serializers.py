@@ -29,6 +29,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
 
+    def create(self, validated_data):
+        user = super().create(validated_data)
+
+        user.set_password(user.password)
+        user.save()
+
+        return user
+
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
     location_id = serializers.SlugRelatedField(
