@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import ModelViewSet
 
 from ads.models import Ad
+from ads.permissions import IsOwnerOrStaff
 from ads.serializers import AdSerializer
 
 
@@ -18,7 +19,10 @@ class AdsViewSet(ModelViewSet):
     serializer_class = AdSerializer
 
     permissions = {
-        "retrieve": [IsAuthenticated()]
+        "retrieve": [IsAuthenticated()],
+        "update": [IsAuthenticated(), IsOwnerOrStaff()],
+        "partial_update": [IsAuthenticated(), IsOwnerOrStaff()],
+        "destroy": [IsAuthenticated(), IsOwnerOrStaff()],
     }
     permissions_default = [AllowAny()]
 

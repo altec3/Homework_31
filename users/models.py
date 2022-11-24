@@ -5,10 +5,14 @@ from locations.models import Location
 
 
 class User(AbstractUser):
+    ADMIN = "admin"
+    MEMBER = "member"
+    MODERATOR = "moderator"
+
     ROLE = [
-        ("admin", "Администратор"),
-        ("member", "Пользователь"),
-        ("moderator", "Модератор")
+        (ADMIN, "Администратор"),
+        (MEMBER, "Пользователь"),
+        (MODERATOR, "Модератор")
     ]
     role = models.CharField(max_length=9, choices=ROLE, default="member")
     age = models.PositiveSmallIntegerField(null=True)
