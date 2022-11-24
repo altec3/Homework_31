@@ -80,4 +80,4 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserDestroySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        field = ["id"]
+        fields = ["id"]

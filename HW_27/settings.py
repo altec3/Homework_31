@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'categories',
     'locations',
     'users',
+    'selections',
 ]
 
 MIDDLEWARE = [
