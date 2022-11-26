@@ -2,9 +2,11 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import UpdateView
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import ModelViewSet
 
 from ads.models import Ad
+from ads.permissions import IsOwnerOrStaff
 from ads.serializers import AdSerializer
 
 
@@ -15,6 +17,17 @@ def index(request):
 class AdsViewSet(ModelViewSet):
     queryset = Ad.objects.order_by("-price")
     serializer_class = AdSerializer
+
+    permissions = {
+        "retrieve": [IsAuthenticated()],
+        "update": [IsAuthenticated(), IsOwnerOrStaff()],
+        "partial_update": [IsAuthenticated(), IsOwnerOrStaff()],
+        "destroy": [IsAuthenticated(), IsOwnerOrStaff()],
+    }
+    permissions_default = [AllowAny()]
+
+    def get_permissions(self):
+        return self.permissions.get(self.action, self.permissions_default)
 
     def list(self, request, *args, **kwargs):
         categories: list = request.GET.getlist("cat")
