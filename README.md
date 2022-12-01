@@ -1,6 +1,13 @@
 # Урок 31. Домашнее задание
 
 
+### Установка зависимостей
+
+```python
+pip install poetry
+poetry install
+```
+
 ### Создание и запуск образа с PostgreSQL
 
 ```python

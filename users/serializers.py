@@ -1,7 +1,9 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from locations.models import Location
 from users.models import User
+from users.validators import UserAgeValidator, EmailDomainValidator
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -13,7 +15,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name", "username", "role", "age", "total_ads", "location_id"]
+        fields = ["id", "first_name", "last_name", "username", "role", "age", "birth_date", "total_ads", "location_id"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -23,6 +25,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
         required=False,
         queryset=Location.objects.all(),
         slug_field="name"
+    )
+
+    birth_date = serializers.DateField(
+        validators=[UserAgeValidator(min_age=9)]
+    )
+
+    email = serializers.EmailField(
+        validators=[
+            EmailDomainValidator(domain="rambler.ru"),
+            UniqueValidator(queryset=User.objects.all())
+        ]
     )
 
     class Meta:
@@ -61,7 +74,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name", "username", "role", "age", "location_id"]
+        fields = ["id", "first_name", "last_name", "username", "role", "age", "birth_date", "location_id"]
 
     def is_valid(self, *, raise_exception=False):
         self._locations = self.initial_data.pop("location_id", [])

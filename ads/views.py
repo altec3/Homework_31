@@ -19,6 +19,7 @@ class AdsViewSet(ModelViewSet):
     serializer_class = AdSerializer
 
     permissions = {
+        "create": [IsAuthenticated()],
         "retrieve": [IsAuthenticated()],
         "update": [IsAuthenticated(), IsOwnerOrStaff()],
         "partial_update": [IsAuthenticated(), IsOwnerOrStaff()],
