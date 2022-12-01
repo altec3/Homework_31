@@ -8,7 +8,6 @@ pip install poetry
 poetry install
 ```
 
-
 ### Создание и запуск образа с PostgreSQL
 
 ```python
