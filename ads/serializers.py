@@ -10,6 +10,7 @@ class AdSerializer(serializers.ModelSerializer):
     )
 
     is_published = serializers.BooleanField(
+        required=False,
         validators=[BooleanValueValidator()]
     )
 
