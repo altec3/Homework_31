@@ -5,8 +5,10 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
+from rest_framework.generics import CreateAPIView
 
 from categories.models import Category
+from categories.serializers import CategorySerializer
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -23,28 +25,17 @@ class CategoriesListView(ListView):
         for category in self.object_list:
             response.append({
                 "id": category.id,
-                "name": category.name
+                "name": category.name,
+                "slug": category.slug
             })
 
         return JsonResponse(response, safe=False, status=200)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class CategoryCreateView(CreateView):
-    model = Category
-    fields = ["name"]
-
-    """Create a new category"""
-    def post(self, request, *args, **kwargs):
-        data: Dict[str, Any] = json.loads(request.body)
-
-        category = Category.objects.create(**data)
-        category.save()
-
-        return JsonResponse({
-            'id': category.id,
-            'name': category.name
-        }, status=201)
+class CategoryCreateView(CreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class CategoryDetailView(DetailView):
