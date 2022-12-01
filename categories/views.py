@@ -1,10 +1,9 @@
 import json
-from typing import Dict, Any
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import DetailView, ListView, UpdateView, DeleteView
 from rest_framework.generics import CreateAPIView
 
 from categories.models import Category
