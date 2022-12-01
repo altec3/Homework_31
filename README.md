@@ -1,4 +1,4 @@
-# Урок 30. Домашнее задание
+# Урок 31. Домашнее задание
 
 
 ### Установка зависимостей
@@ -12,7 +12,7 @@ poetry install
 ### Создание и запуск образа с PostgreSQL
 
 ```python
-docker run --name hw_30_psql -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+docker run --name hw_31_psql -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 ```
 
 ### Миграция таблиц в базу данных
