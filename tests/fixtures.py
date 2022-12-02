@@ -2,18 +2,30 @@ import pytest
 
 
 @pytest.fixture
-@pytest.mark.django_db
-def token(client, django_user_model):
-    username = "test"
-    password = "123test"
+def auth_data(django_user_model):
 
-    django_user_model.objects.create_user(
-        username=username, password=password
+    return {
+        "user": django_user_model,
+        "username": "test",
+        "password": "test-password"
+    }
+
+
+@pytest.fixture
+@pytest.mark.django_db
+def token(client, auth_data):
+
+    user_obj = auth_data["user"]
+
+    # Добавим пользователя в базу
+    user_obj.objects.create_user(
+        username=auth_data["username"],
+        password=auth_data["password"]
     )
 
     response = client.post(
         "/user/token/",
-        {"username": username, "password": password},
+        {"username": auth_data["username"], "password": auth_data["password"]},
         content_type='application/json'
     )
 
